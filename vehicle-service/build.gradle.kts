@@ -35,4 +35,5 @@ android {
 
 dependencies {
     implementation(project(":common-aidl"))
+    implementation(libs.androidx.appcompat)
 }

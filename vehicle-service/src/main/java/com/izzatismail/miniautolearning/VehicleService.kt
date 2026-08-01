@@ -152,7 +152,6 @@ class VehicleService : Service() {
         override fun registerCallback(callback: IVehicleCallback) {
             Log.d(TAG, "Received registerCallback() on thread ${Thread.currentThread().name}")
             callbacks.register(callback)
-            callbacks.finishBroadcast()
         }
 
         override fun unregisterCallback(callback: IVehicleCallback) {
