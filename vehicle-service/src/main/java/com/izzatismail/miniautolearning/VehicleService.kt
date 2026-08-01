@@ -2,7 +2,9 @@ package com.izzatismail.miniautolearning
 
 import android.app.Service
 import android.content.Intent
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.RemoteCallbackList
 import android.util.Log
 
@@ -10,6 +12,9 @@ import android.util.Log
  * Bound service that owns the vehicle state and processes IPC requests from
  * multiple client apps. Runs in the ":vehicle" process to enforce process
  * separation — even if a client crashes, the service remains unaffected.
+ *
+ * Periodically simulates speed changes so that onSpeedChanged callbacks
+ * fire meaningfully for registered clients.
  */
 class VehicleService : Service() {
 
@@ -22,6 +27,25 @@ class VehicleService : Service() {
     // causing the service to try notifying a zombie client — which would throw a
     // DeadObjectException during the broadcast loop.
     private val callbacks = RemoteCallbackList<IVehicleCallback>()
+
+    private val speedSimulator = Handler(Looper.getMainLooper())
+    private val speedRunnable = object : Runnable {
+        private var direction = 1
+        override fun run() {
+            val current = repository.getSpeed()
+            val next = current + (5 * direction)
+            if (next >= 100) direction = -1
+            if (next <= 30) direction = 1
+            repository.setSpeedRaw(next)
+            Log.d(TAG, "Simulated speed changed to $next, notifying callbacks (oneway)")
+            val count = callbacks.beginBroadcast()
+            for (i in 0 until count) {
+                callbacks.getBroadcastItem(i).onSpeedChanged(next)
+            }
+            callbacks.finishBroadcast()
+            speedSimulator.postDelayed(this, 5000L)
+        }
+    }
 
     private val binder = object : IVehicleService.Stub() {
 
@@ -110,6 +134,12 @@ class VehicleService : Service() {
         }
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        Log.d(TAG, "onCreate() — starting speed simulator")
+        speedSimulator.postDelayed(speedRunnable, 5000L)
+    }
+
     override fun onBind(intent: Intent?): IBinder {
         Log.d(TAG, "onBind() on thread ${Thread.currentThread().name}")
         return binder
@@ -117,6 +147,7 @@ class VehicleService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy()")
+        speedSimulator.removeCallbacks(speedRunnable)
         callbacks.kill()
         super.onDestroy()
     }

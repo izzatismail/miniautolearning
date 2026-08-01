@@ -1,13 +1,72 @@
 package com.izzatismail.miniautolearning
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.izzatismail.miniautolearning.climate.R
+import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.izzatismail.miniautolearning.climate.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var vehicleManager: VehicleManager
+
+    private val callback = object : VehicleManager.VehicleCallback {
+        override fun onSpeedChanged(speed: Int) {
+            // Climate doesn't display speed
+        }
+
+        override fun onTemperatureChanged(temperature: Int) {
+            binding.temperatureText.text = "$temperature°C"
+        }
+
+        override fun onDoorLockChanged(locked: Boolean) {
+            // Climate doesn't display door status
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        vehicleManager = VehicleManager(this)
+
+        binding.increaseButton.setOnClickListener {
+            val current = parseTemperature(binding.temperatureText.text.toString())
+            val next = current + 1
+            if (next <= 30) {
+                Log.d(TAG, "Setting temperature to $next°C")
+                vehicleManager.setTemperature(next)
+            } else {
+                Toast.makeText(this, "Max 30°C", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.decreaseButton.setOnClickListener {
+            val current = parseTemperature(binding.temperatureText.text.toString())
+            val next = current - 1
+            if (next >= 16) {
+                Log.d(TAG, "Setting temperature to $next°C")
+                vehicleManager.setTemperature(next)
+            } else {
+                Toast.makeText(this, "Min 16°C", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        vehicleManager.bind(callback)
+    }
+
+    override fun onDestroy() {
+        vehicleManager.unbind()
+        super.onDestroy()
+    }
+
+    private fun parseTemperature(text: String): Int {
+        return text.removeSuffix("°C").toIntOrNull() ?: 22
+    }
+
+    companion object {
+        private const val TAG = "Climate"
     }
 }

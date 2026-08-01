@@ -3,7 +3,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Climate"
+        android:label="Media"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 

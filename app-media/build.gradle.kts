@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    namespace = "com.izzatismail.miniautolearning.climate"
+    namespace = "com.izzatismail.miniautolearning.media"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
 
     defaultConfig {
-        applicationId = "com.izzatismail.miniautolearning.climate"
+        applicationId = "com.izzatismail.miniautolearning.media"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
