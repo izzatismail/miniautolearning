@@ -1,3 +1,63 @@
+# AGENTS.md — Agent Instructions
+
+Below is repo-specific guidance for coding agents. The section starting at **"Project"** below is the full design specification — keep it as the source of truth for what to build and why.
+
+---
+
+## Repo State
+- Fresh Android Studio placeholder project, single `:app` module only
+- AGP 9.2.1, Gradle 9.4.1, minSdk 26, targetSdk 36
+- No AIDL files, no Kotlin source files in `app/src/main/java` yet
+- compileSdk uses AGP 9 API: `version = release(36) { minorApiLevel = 1 }`
+- Version catalog at `gradle/libs.versions.toml`
+- Package: `com.izzatismail.miniautolearning`
+
+## Branch + Commit Workflow
+- Create a new branch before every set of changes
+- Conventional commit prefixes: `feat:`, `fix:`, `chore:`, `docs:`
+- Example: `feat: add IVehicleService and IVehicleCallback AIDL interfaces`
+- **Verify the project compiles** (`./gradlew assembleDebug`) before committing
+- After completing a milestone group: commit (squash if needed), push, create a PR
+
+## Build Commands
+- `./gradlew assembleDebug` — full build
+- `./gradlew :module:assembleDebug` — single module
+- Kotlin code style: `official` (no trailing commas)
+
+## Technical Constraints
+- **NO**: Jetpack Compose, Hilt, Dagger, Koin, Coroutines, Flow, RxJava, MVVM, Clean Architecture
+- **USE**: Kotlin, XML layouts, View Binding (`buildFeatures { viewBinding = true }` in `build.gradle.kts`), standard Android SDK
+
+## Required Multi-Module Architecture
+Refactor the existing `:app` into this structure:
+- `:common-aidl` — Android Library, contains `IVehicleService.aidl` and `IVehicleCallback.aidl`
+- `:vehicle-service` — Android app module, runs in separate process (`android:process=":vehicle"` in manifest)
+- `:app-dashboard` — refactored from existing `:app`
+- `:app-climate` — new Android app module
+- `:common-model` — Android Library, Parcelable models (Phase 3+)
+
+## Initial Deliverable (Milestones 1-3)
+Build and commit these three milestones together, then push + PR:
+1. **AIDL contracts** — create `:common-aidl` module with `IVehicleService.aidl` and `IVehicleCallback.aidl` (oneway)
+2. **VehicleRepository** — thread-safe repository with `synchronized` access, thread-name logging
+3. **VehicleService + process separation** — bound service in `:vehicle-service`, verify with `adb shell ps | grep vehicle`
+
+## Key Design Rules (from the spec below)
+- **RemoteCallbackList** for callbacks — never a plain `ArrayList` (auto-cleans dead clients via `linkToDeath`)
+- **`oneway`** on `IVehicleCallback.aidl` — fan-out must not block on a slow/dead client
+- **`synchronized`** on all VehicleRepository read/write methods — guard against concurrent Binder threads
+- **Main-thread re-dispatch** in VehicleManager — callbacks arrive on a Binder thread; re-post to main thread before calling app code
+- **Real permissions** via `checkCallingOrSelfPermission` for `lockDoors`, `unlockDoors`, `setGear` — real `SecurityException`, not an if-check
+- **Temperature range**: 16–30 °C, reject invalid values
+- **Log thread name** (`Thread.currentThread().name`) in every IPC method
+
+## Verification
+- `adb shell ps | grep vehicle` — confirm process separation
+- `adb logcat | grep -E "VehicleService|VehicleManager|Dashboard|Climate"` — trace IPC lifecycle
+- `./gradlew assembleDebug` — compile check before every commit
+
+---
+
 # AGENTS.md
 
 # Project
