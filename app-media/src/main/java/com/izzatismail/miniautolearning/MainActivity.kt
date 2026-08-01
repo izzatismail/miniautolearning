@@ -19,6 +19,14 @@ class MainActivity : AppCompatActivity() {
         override fun onSpeedChanged(speed: Int) {
             binding.speedText.text = "Speed: $speed km/h"
         }
+
+        override fun onGearChanged(gear: String) {
+            binding.gearText.text = "Gear: $gear"
+        }
+
+        override fun onFuelChanged(fuel: Int) {
+            binding.fuelText.text = "Fuel: $fuel%"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

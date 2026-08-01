@@ -34,14 +34,17 @@ class VehicleManager(private val context: Context) {
 
     private val serviceCallback = object : IVehicleCallback.Stub() {
         override fun onSpeedChanged(newSpeed: Int) {
+            Log.d(TAG, "Received callback onSpeedChanged($newSpeed) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onSpeedChanged(newSpeed) }
         }
 
         override fun onTemperatureChanged(newTemperature: Int) {
+            Log.d(TAG, "Received callback onTemperatureChanged($newTemperature) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onTemperatureChanged(newTemperature) }
         }
 
         override fun onDoorLockChanged(locked: Boolean) {
+            Log.d(TAG, "Received callback onDoorLockChanged($locked) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onDoorLockChanged(locked) }
         }
     }
@@ -51,7 +54,8 @@ class VehicleManager(private val context: Context) {
             Log.d(TAG, "Service connected on thread ${Thread.currentThread().name}")
             vehicleService = IVehicleService.Stub.asInterface(service)
             bound = true
-            callback?.let { registerCallback() }
+            registerCallback()
+            loadInitialState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -77,6 +81,21 @@ class VehicleManager(private val context: Context) {
             unregisterCallback()
             context.unbindService(connection)
             bound = false
+        }
+    }
+
+    private fun loadInitialState() {
+        try {
+            val status = vehicleService?.vehicleStatus
+            if (status != null) {
+                mainHandler.post {
+                    callback?.onSpeedChanged(status.speed)
+                    callback?.onTemperatureChanged(status.temperature)
+                    callback?.onDoorLockChanged(status.doorsLocked)
+                }
+            }
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to load initial state", e)
         }
     }
 

@@ -18,6 +18,8 @@ class VehicleManager(private val context: Context) {
 
     interface VehicleCallback {
         fun onSpeedChanged(speed: Int)
+        fun onGearChanged(gear: String)
+        fun onFuelChanged(fuel: Int)
     }
 
     private var vehicleService: IVehicleService? = null
@@ -44,7 +46,8 @@ class VehicleManager(private val context: Context) {
             Log.d(TAG, "Service connected on thread ${Thread.currentThread().name}")
             vehicleService = IVehicleService.Stub.asInterface(service)
             bound = true
-            callback?.let { registerCallback() }
+            registerCallback()
+            loadInitialState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -70,6 +73,21 @@ class VehicleManager(private val context: Context) {
             unregisterCallback()
             context.unbindService(connection)
             bound = false
+        }
+    }
+
+    private fun loadInitialState() {
+        try {
+            val status = vehicleService?.vehicleStatus
+            if (status != null) {
+                mainHandler.post {
+                    callback?.onSpeedChanged(status.speed)
+                    callback?.onGearChanged(status.gear)
+                    callback?.onFuelChanged(status.fuelLevel)
+                }
+            }
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to load initial state", e)
         }
     }
 

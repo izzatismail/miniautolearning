@@ -31,6 +31,7 @@ class VehicleManager(private val context: Context) {
     private var bound = false
     private var callback: VehicleCallback? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val pendingTemperatureChanges = mutableListOf<Int>()
 
     private val serviceCallback = object : IVehicleCallback.Stub() {
         override fun onSpeedChanged(newSpeed: Int) {
@@ -51,7 +52,9 @@ class VehicleManager(private val context: Context) {
             Log.d(TAG, "Service connected on thread ${Thread.currentThread().name}")
             vehicleService = IVehicleService.Stub.asInterface(service)
             bound = true
-            callback?.let { registerCallback() }
+            registerCallback()
+            flushPendingChanges()
+            loadInitialState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -96,9 +99,35 @@ class VehicleManager(private val context: Context) {
         }
     }
 
+    private fun loadInitialState() {
+        try {
+            val status = vehicleService?.vehicleStatus
+            if (status != null) {
+                mainHandler.post {
+                    callback?.onTemperatureChanged(status.temperature)
+                }
+            }
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to load initial state", e)
+        }
+    }
+
+    private fun flushPendingChanges() {
+        for (value in pendingTemperatureChanges) {
+            try {
+                vehicleService?.setTemperature(value)
+            } catch (e: RemoteException) {
+                Log.e(TAG, "Failed to flush pending setTemperature($value)", e)
+            }
+        }
+        pendingTemperatureChanges.clear()
+    }
+
     fun setTemperature(value: Int) {
+        Log.d(TAG, "setTemperature($value) called, service=${vehicleService != null}")
         try {
             vehicleService?.setTemperature(value)
+            Log.d(TAG, "setTemperature($value) sent")
         } catch (e: RemoteException) {
             Log.e(TAG, "Failed to set temperature", e)
         }

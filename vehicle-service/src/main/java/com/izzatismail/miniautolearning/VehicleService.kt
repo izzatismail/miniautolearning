@@ -33,6 +33,7 @@ class VehicleService : Service() {
 
     private val halCallback = object : VehicleHal.HalCallback {
         override fun onSpeedChanged(speed: Int) {
+            Log.d(TAG, "HAL callback: onSpeedChanged($speed), broadcasting to callbacks")
             val count = callbacks.beginBroadcast()
             for (i in 0 until count) {
                 callbacks.getBroadcastItem(i).onSpeedChanged(speed)
@@ -41,6 +42,7 @@ class VehicleService : Service() {
         }
 
         override fun onTemperatureChanged(temperature: Int) {
+            Log.d(TAG, "HAL callback: onTemperatureChanged($temperature), broadcasting to callbacks")
             val count = callbacks.beginBroadcast()
             for (i in 0 until count) {
                 callbacks.getBroadcastItem(i).onTemperatureChanged(temperature)
@@ -49,6 +51,7 @@ class VehicleService : Service() {
         }
 
         override fun onDoorLockChanged(locked: Boolean) {
+            Log.d(TAG, "HAL callback: onDoorLockChanged($locked), broadcasting to callbacks")
             val count = callbacks.beginBroadcast()
             for (i in 0 until count) {
                 callbacks.getBroadcastItem(i).onDoorLockChanged(locked)
@@ -152,7 +155,6 @@ class VehicleService : Service() {
         override fun registerCallback(callback: IVehicleCallback) {
             Log.d(TAG, "Received registerCallback() on thread ${Thread.currentThread().name}")
             callbacks.register(callback)
-            callbacks.finishBroadcast()
         }
 
         override fun unregisterCallback(callback: IVehicleCallback) {
