@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.izzatismail.miniautolearning.aidl"
+    namespace = "com.izzatismail.miniautolearning.model"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -18,12 +18,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
-    buildFeatures {
-        aidl = true
-    }
 }
 
 dependencies {
-    api(project(":common-model"))
 }

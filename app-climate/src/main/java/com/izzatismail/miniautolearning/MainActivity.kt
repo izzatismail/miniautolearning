@@ -6,6 +6,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.izzatismail.miniautolearning.climate.databinding.ActivityMainBinding
 
+/**
+ * Climate app that allows adjusting the vehicle cabin temperature.
+ *
+ * When the user presses +/- , setTemperature() is called via Binder on the
+ * VehicleService. The service updates VehicleRepository and broadcasts the
+ * change to all registered clients via the oneway IVehicleCallback interface.
+ * Both Climate and Dashboard receive the onTemperatureChanged callback and
+ * update their UIs automatically — proving shared state through Binder IPC.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
