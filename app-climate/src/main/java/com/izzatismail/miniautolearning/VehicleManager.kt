@@ -124,13 +124,16 @@ class VehicleManager(private val context: Context) {
     }
 
     fun setTemperature(value: Int) {
+        Log.d(TAG, "setTemperature($value) called, bound=$bound, service=${vehicleService != null}")
         if (bound) {
             try {
                 vehicleService?.setTemperature(value)
+                Log.d(TAG, "setTemperature($value) sent successfully")
             } catch (e: RemoteException) {
                 Log.e(TAG, "Failed to set temperature", e)
             }
         } else {
+            Log.d(TAG, "setTemperature($value) queued (not bound yet)")
             pendingTemperatureChanges.add(value)
         }
     }

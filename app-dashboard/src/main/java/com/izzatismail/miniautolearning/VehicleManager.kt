@@ -34,14 +34,17 @@ class VehicleManager(private val context: Context) {
 
     private val serviceCallback = object : IVehicleCallback.Stub() {
         override fun onSpeedChanged(newSpeed: Int) {
+            Log.d(TAG, "Received callback onSpeedChanged($newSpeed) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onSpeedChanged(newSpeed) }
         }
 
         override fun onTemperatureChanged(newTemperature: Int) {
+            Log.d(TAG, "Received callback onTemperatureChanged($newTemperature) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onTemperatureChanged(newTemperature) }
         }
 
         override fun onDoorLockChanged(locked: Boolean) {
+            Log.d(TAG, "Received callback onDoorLockChanged($locked) on ${Thread.currentThread().name}")
             mainHandler.post { callback?.onDoorLockChanged(locked) }
         }
     }
