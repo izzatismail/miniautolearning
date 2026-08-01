@@ -11,9 +11,8 @@ import com.izzatismail.miniautolearning.dashboard.databinding.ActivityMainBindin
  * the oneway IVehicleCallback interface. VehicleManager re-dispatches these
  * from the Binder thread to the main thread before reaching this activity.
  *
- * On startup, a single getVehicleStatus() call loads all initial values
- * instead of making five separate IPC calls. After that, callbacks keep
- * the UI current.
+ * Initial state is loaded automatically by VehicleManager once the service
+ * connects (via a single getVehicleStatus() Parcelable call).
  */
 class MainActivity : AppCompatActivity() {
 
@@ -42,19 +41,6 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Starting Dashboard — binding to vehicle service")
         vehicleManager = VehicleManager(this)
         vehicleManager.bind(callback)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Load initial state via single IPC call (Parcelable VehicleStatus)
-        val status = vehicleManager.getVehicleStatus()
-        if (status != null) {
-            binding.speedText.text = "${status.speed} km/h"
-            binding.fuelText.text = "${status.fuelLevel}%"
-            binding.gearText.text = status.gear
-            binding.doorsText.text = if (status.doorsLocked) "Locked" else "Unlocked"
-            binding.temperatureText.text = "${status.temperature}°C"
-        }
     }
 
     override fun onDestroy() {
