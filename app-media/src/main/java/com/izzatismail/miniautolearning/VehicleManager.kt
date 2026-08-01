@@ -11,20 +11,13 @@ import android.os.RemoteException
 import android.util.Log
 
 /**
- * Client-side wrapper that hides all Binder details from app code.
- *
- * Why main-thread re-dispatch: Callback methods (onSpeedChanged, etc.)
- * are invoked by the Binder thread in the client's process. Touching a
- * TextView from a Binder thread crashes with CalledFromWrongThreadException.
- * VehicleManager re-posts every callback invocation to the main thread via
- * Handler before the listener sees it.
+ * Read-only client wrapper for the Media app.
+ * Registers for callbacks with main-thread re-dispatch.
  */
 class VehicleManager(private val context: Context) {
 
     interface VehicleCallback {
         fun onSpeedChanged(speed: Int)
-        fun onTemperatureChanged(temperature: Int)
-        fun onDoorLockChanged(locked: Boolean)
     }
 
     private var vehicleService: IVehicleService? = null
@@ -38,11 +31,11 @@ class VehicleManager(private val context: Context) {
         }
 
         override fun onTemperatureChanged(newTemperature: Int) {
-            mainHandler.post { callback?.onTemperatureChanged(newTemperature) }
+            // Media doesn't display temperature
         }
 
         override fun onDoorLockChanged(locked: Boolean) {
-            mainHandler.post { callback?.onDoorLockChanged(locked) }
+            // Media doesn't display door status
         }
     }
 
@@ -97,6 +90,6 @@ class VehicleManager(private val context: Context) {
     }
 
     companion object {
-        private const val TAG = "VehicleManager-Dashboard"
+        private const val TAG = "VehicleManager-Media"
     }
 }

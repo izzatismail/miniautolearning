@@ -3,13 +3,12 @@ package com.izzatismail.miniautolearning
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.izzatismail.miniautolearning.dashboard.databinding.ActivityMainBinding
+import com.izzatismail.miniautolearning.media.databinding.ActivityMainBinding
 
 /**
- * Dashboard receives real-time updates via Binder callbacks instead of polling.
- * VehicleService pushes speed, temperature, and door status changes through
- * the oneway IVehicleCallback interface. VehicleManager re-dispatches these
- * from the Binder thread to the main thread before reaching this activity.
+ * Read-only Media app that displays vehicle speed, gear, and fuel level.
+ * Receives speed updates via Binder callbacks; polls for gear and fuel
+ * since those don't change autonomously (no CAN simulation yet).
  */
 class MainActivity : AppCompatActivity() {
 
@@ -18,15 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private val callback = object : VehicleManager.VehicleCallback {
         override fun onSpeedChanged(speed: Int) {
-            binding.speedText.text = "$speed km/h"
-        }
-
-        override fun onTemperatureChanged(temperature: Int) {
-            binding.temperatureText.text = "$temperature°C"
-        }
-
-        override fun onDoorLockChanged(locked: Boolean) {
-            binding.doorsText.text = if (locked) "Locked" else "Unlocked"
+            binding.speedText.text = "Speed: $speed km/h"
         }
     }
 
@@ -35,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.d(TAG, "Starting Dashboard — binding to vehicle service")
+        Log.d(TAG, "Starting Media — binding to vehicle service")
         vehicleManager = VehicleManager(this)
         vehicleManager.bind(callback)
     }
@@ -46,6 +37,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "Dashboard"
+        private const val TAG = "Media"
     }
 }

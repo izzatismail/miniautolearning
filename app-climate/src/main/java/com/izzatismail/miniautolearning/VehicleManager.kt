@@ -13,11 +13,11 @@ import android.util.Log
 /**
  * Client-side wrapper that hides all Binder details from app code.
  *
- * Why main-thread re-dispatch: Callback methods (onSpeedChanged, etc.)
+ * Why main-thread re-dispatch: Callback methods (onTemperatureChanged etc.)
  * are invoked by the Binder thread in the client's process. Touching a
- * TextView from a Binder thread crashes with CalledFromWrongThreadException.
- * VehicleManager re-posts every callback invocation to the main thread via
- * Handler before the listener sees it.
+ * TextView directly from a Binder thread crashes with
+ * CalledFromWrongThreadException. VehicleManager re-posts every callback
+ * invocation to the main thread via Handler before the listener sees it.
  */
 class VehicleManager(private val context: Context) {
 
@@ -96,7 +96,15 @@ class VehicleManager(private val context: Context) {
         }
     }
 
+    fun setTemperature(value: Int) {
+        try {
+            vehicleService?.setTemperature(value)
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to set temperature", e)
+        }
+    }
+
     companion object {
-        private const val TAG = "VehicleManager-Dashboard"
+        private const val TAG = "VehicleManager-Climate"
     }
 }

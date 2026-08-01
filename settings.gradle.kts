@@ -23,5 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MiniAutoLearning"
-include(":app-dashboard", ":common-aidl", ":vehicle-service", ":app-climate")
+include(":app-dashboard", ":common-aidl", ":vehicle-service", ":app-climate", ":app-media")
  
