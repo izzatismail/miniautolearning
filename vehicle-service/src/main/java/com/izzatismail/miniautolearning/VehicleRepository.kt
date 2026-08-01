@@ -64,6 +64,12 @@ class VehicleRepository {
     }
 
     @Synchronized
+    fun getVehicleStatus(): VehicleStatus {
+        Log.d(TAG, "getVehicleStatus() on thread ${Thread.currentThread().name}")
+        return VehicleStatus(speed, fuelLevel, gear, temperature, doorsLocked)
+    }
+
+    @Synchronized
     fun setSpeedRaw(value: Int) {
         speed = value
     }

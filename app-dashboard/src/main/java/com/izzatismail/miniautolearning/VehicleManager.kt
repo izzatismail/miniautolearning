@@ -96,6 +96,15 @@ class VehicleManager(private val context: Context) {
         }
     }
 
+    fun getVehicleStatus(): VehicleStatus? {
+        return try {
+            vehicleService?.vehicleStatus
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Failed to get vehicle status", e)
+            null
+        }
+    }
+
     companion object {
         private const val TAG = "VehicleManager-Dashboard"
     }
